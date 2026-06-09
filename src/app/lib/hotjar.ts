@@ -1,17 +1,32 @@
 import Hotjar from '@hotjar/browser';
 
-let initialized = false;
+let hotjarInitialized = false;
+
+function contentsquareScriptLoaded(siteId: string) {
+  return Boolean(
+    document.querySelector(`script[src*="contentsquare.net/uxa/${siteId}"]`),
+  );
+}
 
 export function initHotjar(siteId: string | undefined) {
-  if (!siteId || initialized) {
+  if (!siteId || hotjarInitialized) {
     return;
   }
 
-  const id = Number(siteId);
-  if (!id) {
+  hotjarInitialized = true;
+
+  const numericId = Number(siteId);
+  if (numericId) {
+    Hotjar.init(numericId, 6);
     return;
   }
 
-  initialized = true;
-  Hotjar.init(id, 6);
+  if (contentsquareScriptLoaded(siteId)) {
+    return;
+  }
+
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = `https://t.contentsquare.net/uxa/${siteId}.js`;
+  document.head.appendChild(script);
 }
